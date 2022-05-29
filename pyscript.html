@@ -1,0 +1,66 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pyscript REPL</title>
+    <link rel="icon" href="./favicon.ico"/>
+    <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+
+</head>
+<body>
+
+<pre id="container"></pre>
+<button id="btn1" pys-onClick="click_btn1()">pyScript button1</button>
+
+<pyscript>
+    output = Element("container");
+    output.print("Hello World!");
+</pyscript>
+<py-env>
+- pandas
+- numpy
+- matplotlib
+#- paths:
+#    - /sin.py
+</py-env>
+
+<py-repl id="my-repl"  auto-generate="true">
+import numpy as np
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(figsize=(14,8))
+x = np.linspace(-2*np.pi, 2*np.pi, 100)
+ax.plot(np.sin(x) + np.cos(2*x))
+ax.grid()
+fig
+</py-repl>
+
+<py-repl auto-generate="false">
+import pandas as pd
+from pyodide import open_url as urlopen
+url = 'https://d17h27t6h515a5.cloudfront.net/topher/2016/September/57e9a84c_titanic-data/titanic-data.csv'
+with urlopen(url) as request:
+    df = pd.read_csv(request)        
+df.columns
+</py-repl>
+
+<py-repl auto-generate="false">
+import matplotlib.pyplot as plt
+fig, ax = plt.subplots(figsize=(14,8))
+ax = df.Survived.value_counts().plot.bar()
+fig
+</py-repl>
+
+<py-repl auto-generate="true">
+from js import Object
+from js import fetch
+from js import JSON
+from pyodide import toPy
+
+r = await fetch('https://api.randomuser.me/?nat=CZ&results=4')
+results = await r.json()
+results.toPy()
+</py-repl>
+</body>
+</html>

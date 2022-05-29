@@ -1,0 +1,51 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pyodide promise example</title>
+    <script type="module">
+        import "https://cdn.jsdelivr.net/pyodide/v0.20.1a1/full/pyodide.js";
+        
+        const stdout = document.getElementById("stdout");
+        console.log(stdout);
+        
+        const pyCodeMin = `
+        import sys
+        print('hello world <br> from pyodide')
+        sys.version
+        `;
+
+        const pyCode = `
+        import micropip as pip
+        await pip.install('pandas')
+        import pandas as pd
+        import json
+        from pyodide import open_url as urlopen
+
+        url = 'https://api.randomuser.me/?format=csv'
+        with urlopen(url) as request:
+            df = pd.read_csv(request)
+        df.to_html()
+        `;
+
+        loadPyodide({
+                stdout: s => stdout.innerHTML += `${s}\n`,
+            }).then(pyodide => { 
+                stdout.innerHTML = `Python <b>${pyodide.pyimport("sys").version}</b> initialization complete<br>`;
+                globalThis.pyodide = pyodide; // save the pyodide object to the global scope
+                pyodide.loadPackage(['micropip'])
+                .then(() => pyodide.runPythonAsync(pyCode))
+                .then(result => {
+                    stdout.innerHTML += `${result}\n`;
+                })
+            });
+
+    </script>
+
+</head>
+
+<body>
+    <pre id="stdout"></pre>
+</body>
+</html>
