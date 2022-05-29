@@ -1,0 +1,65 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>py script</title>
+    <script type="module">
+        import "https://cdn.jsdelivr.net/pyodide/v0.20.1a1/full/pyodide.js";
+
+        class PyScript extends HTMLElement {
+        
+            constructor() {
+                super();
+                this.output = this.getAttribute('output');
+                this.outputElement = document.getElementById(this.output);
+                this.setAttribute('style', 'white-space: pre-line; display: none;');
+                this.code = this.innerText;
+                loadPyodide({
+                        stdout: s => this.outputElement.innerHTML += `${s}\n`,
+                    }).then(pyodide => { 
+                        this.outputElement.innerHTML = `Python <b>${pyodide.pyimport("sys").version}</b> initialization complete<br>`;
+                    globalThis.pyodide = pyodide; // save the pyodide object to the global scope
+                    pyodide.loadPackage(['micropip'])
+                    .then(() => pyodide.runPythonAsync(this.code))
+                    .then(result => {
+                        this.outputElement.innerHTML += `${result}\n`;
+                    })
+                });
+
+            }
+        }
+        
+        customElements.define('py-script', PyScript);
+
+    </script>
+</head>
+<body>
+
+    <h2> Hello Python!</h2>
+    <pre id="console1"></pre>
+    <py-script output="console1">
+        import sys
+        print('Hello world!')
+        sys.version
+    </py-script>
+
+    <h2> Hello Pandas!</h2>
+    <pre id="console2"></pre>
+    <py-script output="console2">
+        import micropip as pip
+        await pip.install('pandas')
+        import pandas as pd
+        import numpy as np
+        import datetime as dt
+        import string
+
+        cols = [char for char in string.ascii_uppercase][:5]
+        dates = [dt.datetime(2020,m,1).strftime('%Y-%m-%d %H:%M:%S') for m in range(1,13)]
+        index = pd.to_datetime(dates)
+
+        df = pd.DataFrame({i:np.random.rand(12).cumsum() for i in cols}, index=index)
+        df.to_html()
+    </py-script>
+</body>
+</html>
